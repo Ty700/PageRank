@@ -1,4 +1,5 @@
 #include "graph.h"
+#include <vector>
 #ifdef DEBUG 
     #include <iomanip>
     #include <iostream>
@@ -171,23 +172,23 @@ std::vector<std::vector<double>> Graph::build_teleportation_matrix()
     return teleportation_matrix;
 }
 
-std::vector<std::vector<double>> Graph::compute_pagerank()
+std::vector<std::vector<double>> Graph::build_google_matrix()
 {
     auto transition_matrix    = build_transition_matrix();
     auto teleportation_matrix  = build_teleportation_matrix();
         
-    /* Initialize PageRank matrix */
-    std::vector<std::vector<double>> pagerank_matrix;
-    pagerank_matrix.resize(this->num_nodes); 
+    /* Initialize Googel matrix */
+    std::vector<std::vector<double>> google_matrix;
+    google_matrix.resize(this->num_nodes); 
     for(int i = 0; i < this->num_nodes; i++)
-        pagerank_matrix[i].resize(this->num_nodes, 0.0);
+        google_matrix[i].resize(this->num_nodes, 0.0);
     
     /* Compute PageRank matrix */
     for(int row = 0; row < this->num_nodes; row++)
     {
         for(int col = 0; col < this->num_nodes; col++)
         {
-            pagerank_matrix[row][col] =
+            google_matrix[row][col] =
                 ((this->ALPHA) * transition_matrix[row][col]) + 
                 ((1.0 - this->ALPHA) * teleportation_matrix[row][col]);
         }
@@ -202,7 +203,7 @@ std::vector<std::vector<double>> Graph::compute_pagerank()
         }
 
         // Pretty print with labels
-        std::cout << "\n\t=== PageRank Matrix (Column-Stochastic) ===" << std::endl;
+        std::cout << "\n\t=== Google Matrix (Column-Stochastic) ===" << std::endl;
         std::cout << std::fixed << std::setprecision(4);
         
         // Print column headers
@@ -219,31 +220,78 @@ std::vector<std::vector<double>> Graph::compute_pagerank()
             std::cout << std::setw(2) << labels[i] << " [ ";
             for(int j = 0; j < this->num_nodes; j++)
             {
-                std::cout << std::setw(8) << pagerank_matrix[i][j];
+                std::cout << std::setw(8) << google_matrix[i][j];
                 if(j < num_nodes - 1) std::cout << ", ";
             }
             std::cout << " ]" << std::endl;
         }
         std::cout << std::endl;
     #endif
-    return pagerank_matrix;
+    return google_matrix;
 }
 
+double Graph::compute_difference(const std::vector<double>& r_old,
+                                 const std::vector<double>& r_new)
+{
+    double sum = 0.0;
+    for(int i = 0; i < this->num_nodes; i++)
+    {
+        sum += std::abs(r_old[i] - r_new[i]);
+    }
+    return sum;
+}
 
+std::vector<double> Graph::compute_pagerank()
+{
+    std::vector<double> pagerank_matrix;
 
+    auto google_matrix = build_google_matrix();
+    auto r_0 = std::vector<double>(this->num_nodes, static_cast<double>(1.0/this->num_nodes));  
+    
+    for(int i = 0; i < this->MAX_ITER; i++)
+    {
+        std::vector<double> r_old(this->num_nodes, 0.0);
+        std::vector<double> r_new(this->num_nodes, 0.0);
 
-
-
-
-
-
-
-
-
-
-
-
-
+        for(int row = 0; row < this->num_nodes; row++)
+        {
+            for(int col = 0; col < this->num_nodes; col++)
+            {
+                r_new[row] += google_matrix[row][col] * r_0[col];
+            }
+        }
+        
+        if(compute_difference(r_old, r_new) < this->EPSILON)
+        {
+            #ifdef DEBUG
+                std::cout << "\nConverged after " << i+1 << " iterations." << std::endl;
+            #endif
+            pagerank_matrix = r_new;
+            break;
+        } 
+        r_0 = r_new;
+        pagerank_matrix = r_new;
+    }
+    
+    #ifdef DEBUG
+        /* Create index-to-label mapping */
+        std::vector<std::string> labels(num_nodes);
+        for(const auto& pair : node_to_index)
+        {
+            labels[pair.second] = pair.first;
+        }
+        
+        /* Print final PageRank vector */
+        std::cout << "=== Final PageRank Vector ===" << std::endl;
+        std::cout << std::fixed << std::setprecision(6);
+        for(int i = 0; i < this->num_nodes; i++)
+        {
+            std::cout << labels[i] << " [ " << pagerank_matrix[i] << " ]" << std::endl;
+        }
+        std::cout << std::endl;
+    #endif
+    return pagerank_matrix;
+}
 
 
 

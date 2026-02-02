@@ -246,18 +246,17 @@ std::vector<double> Graph::compute_pagerank()
     std::vector<double> pagerank_matrix;
 
     auto google_matrix = build_google_matrix();
-    auto r_0 = std::vector<double>(this->num_nodes, static_cast<double>(1.0/this->num_nodes));  
+    std::vector<double> r_old = std::vector<double>(this->num_nodes, static_cast<double>(1.0/this->num_nodes));  
+    std::vector<double> r_new(this->num_nodes, 0.0);
     
     for(int i = 0; i < this->MAX_ITER; i++)
     {
-        std::vector<double> r_old(this->num_nodes, 0.0);
-        std::vector<double> r_new(this->num_nodes, 0.0);
-
         for(int row = 0; row < this->num_nodes; row++)
         {
+            r_new[row] = 0.0;
             for(int col = 0; col < this->num_nodes; col++)
             {
-                r_new[row] += google_matrix[row][col] * r_0[col];
+                r_new[row] += google_matrix[row][col] * r_old[col];
             }
         }
         
@@ -266,11 +265,9 @@ std::vector<double> Graph::compute_pagerank()
             #ifdef DEBUG
                 std::cout << "\nConverged after " << i+1 << " iterations." << std::endl;
             #endif
-            pagerank_matrix = r_new;
             break;
         } 
-        r_0 = r_new;
-        pagerank_matrix = r_new;
+        r_old = r_new;
     }
     
     #ifdef DEBUG
@@ -286,11 +283,11 @@ std::vector<double> Graph::compute_pagerank()
         std::cout << std::fixed << std::setprecision(6);
         for(int i = 0; i < this->num_nodes; i++)
         {
-            std::cout << labels[i] << " [ " << pagerank_matrix[i] << " ]" << std::endl;
+            std::cout << labels[i] << " [ " << r_new[i] << " ]" << std::endl;
         }
         std::cout << std::endl;
     #endif
-    return pagerank_matrix;
+    return r_new;
 }
 
 

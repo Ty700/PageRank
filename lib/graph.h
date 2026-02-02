@@ -13,7 +13,7 @@ class Graph {
         int num_nodes = 0; 
     
         /* PageRank Parameters */
-        const double ALPHA = 0.85;      /* Damping Factor for Transition Matrix */
+        const double ALPHA = 0.75;      /* Damping Factor for Transition Matrix */
         const double BETA = 1 - ALPHA;  /* Teleportation Factor */
 
         /* Convergence Parameters */

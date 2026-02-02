@@ -175,9 +175,57 @@ std::vector<std::vector<double>> Graph::compute_pagerank()
 {
     auto transition_matrix    = build_transition_matrix();
     auto teleportation_matrix  = build_teleportation_matrix();
-    
+        
+    /* Initialize PageRank matrix */
     std::vector<std::vector<double>> pagerank_matrix;
+    pagerank_matrix.resize(this->num_nodes); 
+    for(int i = 0; i < this->num_nodes; i++)
+        pagerank_matrix[i].resize(this->num_nodes, 0.0);
+    
+    /* Compute PageRank matrix */
+    for(int row = 0; row < this->num_nodes; row++)
+    {
+        for(int col = 0; col < this->num_nodes; col++)
+        {
+            pagerank_matrix[row][col] =
+                ((this->ALPHA) * transition_matrix[row][col]) + 
+                ((1.0 - this->ALPHA) * teleportation_matrix[row][col]);
+        }
+    }
 
+    #ifdef DEBUG
+        // Create index-to-label mapping for printing
+        std::vector<std::string> labels(num_nodes);
+        for(const auto& pair : node_to_index)
+        {
+            labels[pair.second] = pair.first;
+        }
+
+        // Pretty print with labels
+        std::cout << "\n\t=== PageRank Matrix (Column-Stochastic) ===" << std::endl;
+        std::cout << std::fixed << std::setprecision(4);
+        
+        // Print column headers
+        std::cout << " ";  // Space for row labels
+        for(int j = 0; j < this->num_nodes; j++)
+        {
+            std::cout << std::setw(10) << labels[j];
+        }
+        std::cout << std::endl;
+        
+        // Print matrix with row labels
+        for(int i = 0; i < this->num_nodes; i++)
+        {
+            std::cout << std::setw(2) << labels[i] << " [ ";
+            for(int j = 0; j < this->num_nodes; j++)
+            {
+                std::cout << std::setw(8) << pagerank_matrix[i][j];
+                if(j < num_nodes - 1) std::cout << ", ";
+            }
+            std::cout << " ]" << std::endl;
+        }
+        std::cout << std::endl;
+    #endif
     return pagerank_matrix;
 }
 

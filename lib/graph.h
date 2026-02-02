@@ -22,13 +22,14 @@ class Graph {
         
         /* Helper Functions */
         void compute_out_degrees(std::vector<int>& out_degrees);
+        std::vector<std::vector<double>> build_transition_matrix();
+        std::vector<std::vector<double>> build_teleportation_matrix();
 
     public:
-        Graph(); 
-
+        Graph() {};
         void add_node(const std::string& lbl);
         void add_edge(const std::string& from, const std::string& to);
-    
-        std::vector<std::vector<double>> build_transition_matrix();
+
+        std::vector<std::vector<double>> compute_pagerank(); 
         int get_num_nodes() const { return this->num_nodes; }
 };

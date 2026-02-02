@@ -6,22 +6,17 @@ int main()
     g.add_node("A");
     g.add_node("B");
     g.add_node("C");
+    g.add_node("D");
+    g.add_node("E");
     
-    /* Example:
-     * +------+
-     * |  A   |<---+
-     * +------+    |
-     * |           | 
-     * |           | 
-     * v           v
-     * +----+    +----+
-     * | B  |    | C  |
-     * +----+    +----+
-     */
     g.add_edge("A", "B");
     g.add_edge("A", "C");
-    g.add_edge("C", "A");
+    g.add_edge("A", "D");
 
-    auto transition_matrix = g.build_transition_matrix();
+    g.add_edge("B", "C");
+    g.add_edge("B", "E");
+
+    g.add_edge("C", "D");
+    auto page_rank = g.compute_pagerank(); 
     return 0;
 }

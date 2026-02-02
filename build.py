@@ -78,7 +78,7 @@ def make_debug():
     subprocess.run(cmd, shell=True, cwd="./build")
 
 def run(version):
-    cmd = f"./bin/{version}/PageRank"
+    cmd = f"./bin/{version}/PageRankingApp"
     print(f"Running: {cmd}")
     subprocess.run(cmd.split())
 

@@ -1,4 +1,5 @@
 #include "graph.h"
+#include <cstddef>
 #include <vector>
 #ifdef DEBUG 
     #include <iomanip>
@@ -22,7 +23,7 @@ void Graph::add_node(const std::string& lbl)
     this->num_nodes += 1;
 
     adj.resize(this->num_nodes);
-    for(int i = 0; i < this->num_nodes; i++)
+    for(size_t i = 0; i < this->num_nodes; i++)
         adj[i].resize(this->num_nodes, 0);
 }
 
@@ -52,10 +53,10 @@ void Graph::add_edge(const std::string& src, const std::string& dest)
 
 void Graph::compute_out_degrees(std::vector<int>& out_degrees)
 {
-    for(int i = 0; i < this->num_nodes; i++)
+    for(size_t i = 0; i < this->num_nodes; i++)
     {
         int out_degree = 0;
-        for(int j = 0; j < this->num_nodes; j++)
+        for(size_t j = 0; j < this->num_nodes; j++)
         {
             out_degree += this->adj[i][j];
         }
@@ -73,13 +74,13 @@ std::vector<std::vector<double>> Graph::build_transition_matrix()
     std::vector<std::vector<double>> transition_matrix ;
     
     transition_matrix.resize(this->num_nodes);
-    for(int i = 0; i < this->num_nodes; i++)
+    for(size_t i = 0; i < this->num_nodes; i++)
         transition_matrix[i].resize(this->num_nodes);
 
     /* Build translation matrix */
-    for(int row = 0; row < this->num_nodes; row++)
+    for(size_t row = 0; row < this->num_nodes; row++)
     {
-        for(int col = 0; col < this->num_nodes; col++)
+        for(size_t col = 0; col < this->num_nodes; col++)
         {
             if(out_degrees[row] == 0)
             {
@@ -133,7 +134,7 @@ std::vector<std::vector<double>> Graph::build_teleportation_matrix()
     std::vector<std::vector<double>> teleportation_matrix;
     teleportation_matrix.resize(this->num_nodes);
 
-    for(int i = 0; i < this->num_nodes; i++)
+    for(size_t i = 0; i < this->num_nodes; i++)
         teleportation_matrix[i].resize(this->num_nodes, static_cast<double>(1.0/this->num_nodes));
 
     #ifdef DEBUG
@@ -180,13 +181,13 @@ std::vector<std::vector<double>> Graph::build_google_matrix()
     /* Initialize Googel matrix */
     std::vector<std::vector<double>> google_matrix;
     google_matrix.resize(this->num_nodes); 
-    for(int i = 0; i < this->num_nodes; i++)
+    for(size_t i = 0; i < this->num_nodes; i++)
         google_matrix[i].resize(this->num_nodes, 0.0);
     
     /* Compute PageRank matrix */
-    for(int row = 0; row < this->num_nodes; row++)
+    for(size_t row = 0; row < this->num_nodes; row++)
     {
-        for(int col = 0; col < this->num_nodes; col++)
+        for(size_t col = 0; col < this->num_nodes; col++)
         {
             google_matrix[row][col] =
                 ((this->ALPHA) * transition_matrix[row][col]) + 
@@ -234,39 +235,47 @@ double Graph::compute_difference(const std::vector<double>& r_old,
                                  const std::vector<double>& r_new)
 {
     double sum = 0.0;
-    for(int i = 0; i < this->num_nodes; i++)
+    for(size_t i = 0; i < this->num_nodes; i++)
     {
         sum += std::abs(r_old[i] - r_new[i]);
     }
     return sum;
 }
 
-std::vector<double> Graph::compute_pagerank()
+struct PageRankResult Graph::compute_pagerank()
 {
+    /* Return values */
     std::vector<double> pagerank_matrix;
+    std::vector<double> convergence_history;
+    convergence_history.reserve(this->MAX_ITER);
 
     auto google_matrix = build_google_matrix();
     std::vector<double> r_old = std::vector<double>(this->num_nodes, static_cast<double>(1.0/this->num_nodes));  
     std::vector<double> r_new(this->num_nodes, 0.0);
     
-    for(int i = 0; i < this->MAX_ITER; i++)
+    for(size_t i = 0; i < this->MAX_ITER; i++)
     {
-        for(int row = 0; row < this->num_nodes; row++)
+        for(size_t row = 0; row < this->num_nodes; row++)
         {
             r_new[row] = 0.0;
-            for(int col = 0; col < this->num_nodes; col++)
+            for(size_t col = 0; col < this->num_nodes; col++)
             {
-                r_new[row] += google_matrix[row][col] * r_old[col];
+               r_new[row] += google_matrix[row][col] * r_old[col];
             }
         }
-        
-        if(compute_difference(r_old, r_new) < this->EPSILON)
+
+        double diff = compute_difference(r_old, r_new); 
+
+        if(diff < this->EPSILON)
         {
+            convergence_history.push_back(diff);
             #ifdef DEBUG
                 std::cout << "\nConverged after " << i+1 << " iterations." << std::endl;
             #endif
             break;
         } 
+
+        convergence_history.push_back(diff);
         r_old = r_new;
     }
     
@@ -287,14 +296,6 @@ std::vector<double> Graph::compute_pagerank()
         }
         std::cout << std::endl;
     #endif
-    return r_new;
+
+    return PageRankResult{r_new, convergence_history, convergence_history.size()};
 }
-
-
-
-
-
-
-
-
-

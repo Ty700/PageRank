@@ -24,9 +24,20 @@ def test_pagerank():
     g.add_edge("C", "D")
 
     result = g.compute_pagerank()
+    
+    print("=" * 30)
+    print("PageRank Results:")
+    for idx, rank in enumerate(result.pagerank_scores):
+        print(f"Node {idx}: {rank:.6f}")
+    print("=" * 30)
 
-    for i, val in enumerate(result):
-        print(f"  rank[{i}] = {val}")
+    print("Convergence History:")
+    for i, diff in enumerate(result.convergence_history):
+        print(f"Iteration {i + 1}: Difference = {diff:.6f}")
+    print("=" * 30)
+
+    print("Iterations:", result.num_iterations)
+    print("=" * 30)
 
 if __name__ == "__main__":
     test_pagerank()

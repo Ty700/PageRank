@@ -7,6 +7,13 @@ namespace py = pybind11;
 PYBIND11_MODULE(pagerank_cpp, m){
     m.doc() = "C++ implementation of PageRank algorithm";
     
+    /* Expose the Result struct */
+    py::class_<PageRankResult>(m, "Result")
+        .def_readonly("pagerank_scores", &PageRankResult::pagerank_vector, "Computed PageRank scores for each node")
+        .def_readonly("convergence_history", &PageRankResult::convergence_history, "History of convergence differences per iteration")
+        .def_readonly("num_iterations", &PageRankResult::iterations, "Number of iterations taken to converge");
+
+    /* Bind the Graph class */
     py::class_<Graph>(m, "Graph")
         .def(py::init<>())
         .def("add_node", &Graph::add_node, "Add a node to the graph",

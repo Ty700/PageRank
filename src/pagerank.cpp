@@ -1,5 +1,10 @@
 #include "graph.h"
 
+#ifdef DEBUG 
+    #include <iostream>
+    #include <vector>
+#endif 
+
 int main()
 {
     /* 
@@ -16,6 +21,7 @@ int main()
         g.add_node("D");
         g.add_node("E");
         
+
         g.add_edge("A", "B");
         g.add_edge("A", "C");
         g.add_edge("A", "D");
@@ -25,6 +31,10 @@ int main()
 
         g.add_edge("C", "D");
         auto page_rank = g.compute_pagerank(); 
+
+        auto nodes = g.get_nodes();
+        for (const auto& node : nodes) 
+            std::cout << "Node: " << node << std::endl;
     #endif
 
     return 0;

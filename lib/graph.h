@@ -16,8 +16,9 @@ class Graph {
         std::vector<std::vector<int>> adj;          /* Adjacency Matrix */
         std::map<std::string, int> node_to_index;   /* Maps Node to Index in Adjacency Matrix */
         std::vector<std::string> index_to_node;     /* Maps Index in Adjacency Matrix to Node */
+        std::vector<std::pair<std::string, std::string>> edges; /* List of Edges */
         size_t num_nodes = 0; 
-    
+         
         /* PageRank Parameters */
         const double ALPHA = 0.75;      /* Damping Factor for Transition Matrix */
         const double BETA = 1 - ALPHA;  /* Teleportation Factor */
@@ -39,8 +40,12 @@ class Graph {
         /* Graph Manipulation Functions */
         void add_node(const std::string& lbl);
         void add_edge(const std::string& from, const std::string& to);
-        int get_num_nodes() const { return this->num_nodes; }
-        
+
+        /* Getters */
+        std::vector<std::pair<std::string, std::string>> get_edges() const { return this->edges; } 
+        std::vector<std::string> get_nodes() const { return this->index_to_node; }
+        size_t get_num_nodes() const { return this->num_nodes; }
+
         /* High-Level Function to Compute PageRank */
         struct PageRankResult compute_pagerank(); 
 };

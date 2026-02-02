@@ -20,6 +20,12 @@ void Graph::add_node(const std::string& lbl)
     /* Maps the node label to the next available index */ 
     /* Example: If the graph is empty and we add node "A", then node_to_index["A"] = 0 */
     node_to_index[lbl] = this->num_nodes;
+
+    /* Maps the index back to the node label 
+     * Example: 0 -> "A" 
+     */
+    index_to_node.push_back(lbl);
+
     this->num_nodes += 1;
 
     adj.resize(this->num_nodes);
@@ -34,7 +40,6 @@ void Graph::add_edge(const std::string& src, const std::string& dest)
        this->node_to_index.find(dest) == this->node_to_index.end())
     {
         /* One or both nodes do not exist */
-        /* TODO: DEBUG LOG */
         #if DEBUG 
             std::cout << "One or both nodes do not exist in the graph: " << src << ", " << dest << std::endl;
         #endif
@@ -47,6 +52,9 @@ void Graph::add_edge(const std::string& src, const std::string& dest)
 
     /* Add the edge to the adjacency matrix */
     this->adj[src_index][dest_index] = 1;
+    
+    /* Add to edge vector */
+    this->edges.push_back({src, dest});
 
     return;
 }

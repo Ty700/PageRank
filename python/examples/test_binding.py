@@ -14,14 +14,28 @@ def test_pagerank():
     g.add_node("D")
     g.add_node("E")
     
-    g.add_edge("A", "B")
-    g.add_edge("A", "C")
-    g.add_edge("A", "D")
-
     g.add_edge("B", "C")
     g.add_edge("B", "E")
 
     g.add_edge("C", "D")
+
+    g.add_edge("A", "B")
+    g.add_edge("A", "C")
+    g.add_edge("A", "D")
+
+    print("*" * 30)
+    print("Graph Structure:")
+    nodes = g.get_nodes()
+    edges = g.get_edges()
+    edges.sort()
+    
+    for (idx, node) in enumerate(nodes):
+        print(f"Node {idx}: {node}")
+        print(f"  Outgoing edges: ", end="")
+        out_edges = [e[1] for e in edges if e[0] == node]
+        print(", ".join(out_edges) if out_edges else "None")
+
+    print("*" * 30)
 
     result = g.compute_pagerank()
     
@@ -38,6 +52,5 @@ def test_pagerank():
 
     print("Iterations:", result.num_iterations)
     print("=" * 30)
-
 if __name__ == "__main__":
     test_pagerank()

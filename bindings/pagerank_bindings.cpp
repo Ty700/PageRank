@@ -20,6 +20,8 @@ PYBIND11_MODULE(pagerank_cpp, m){
              py::arg("label"))
         .def("add_edge", &Graph::add_edge, "Add an edge to the graph",
              py::arg("src"), py::arg("dest"))
+        .def("get_edges", &Graph::get_edges, "Get all edges in the graph")
+        .def("get_nodes", &Graph::get_nodes, "Get all nodes in the graph")
         .def("num_nodes", &Graph::get_num_nodes, "Get the number of nodes in the graph")
         .def("compute_pagerank", &Graph::compute_pagerank, "Compute PageRank scores");
 }

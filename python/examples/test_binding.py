@@ -22,5 +22,11 @@ def test_pagerank():
     g.add_edge("B", "E")
 
     g.add_edge("C", "D")
-    page_rank = g.compute_pagerank()
 
+    result = g.compute_pagerank()
+
+    for i, val in enumerate(result):
+        print(f"  rank[{i}] = {val}")
+
+if __name__ == "__main__":
+    test_pagerank()

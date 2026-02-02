@@ -16,6 +16,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 add_executable(${EXE_NAME} src/pagerank.cpp)
 add_subdirectory(src)
 add_subdirectory(lib)
+add_subdirectory(bindings)
 
 target_compile_options(${EXE_NAME} PRIVATE -Wall -Wextra) 
 

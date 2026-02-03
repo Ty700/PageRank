@@ -1,0 +1,28 @@
+{
+  "nodes": ["A", "B", "C", "D", "E", "F"],
+  "edges": [
+    ["A", "B"],
+    ["A", "C"],
+    ["A", "D"],
+    ["A", "F"],
+    ["B", "C"],
+    ["B", "E"],
+    ["B", "F"],
+    ["C", "D"],
+    ["C", "F"],
+    ["F", "A"],
+    ["F", "B"],
+    ["F", "C"],
+    ["F", "D"],
+    ["F", "E"],
+    ["F", "F"]
+  ],
+  "parameters": {
+    "visualize": true,
+    "layout": "circular",
+    "output_path": "output/pagerank_network.png",
+    "pixel_budget": 50000,
+    "min_node_size": 500,
+    "show_plot":    true
+  }
+}

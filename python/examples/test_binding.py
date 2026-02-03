@@ -18,7 +18,8 @@ def test_pagerank():
     g.add_node("C")
     g.add_node("D")
     g.add_node("E")
-    
+    g.add_node("F")
+
     g.add_edge("B", "C")
     g.add_edge("B", "E")
 
@@ -27,6 +28,8 @@ def test_pagerank():
     g.add_edge("A", "B")
     g.add_edge("A", "C")
     g.add_edge("A", "D")
+
+    g.add_edge("F", "A")
 
     result = g.compute_pagerank()
     scores = result.pagerank_scores

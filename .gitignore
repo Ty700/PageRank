@@ -5,3 +5,4 @@ compile_commands.json
 .clangd
 .cache/
 python/pagerank/*
+python/output/*

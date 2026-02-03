@@ -34,7 +34,8 @@ A complete implementation of Google's PageRank algorithm in C++ with Python visu
 │  - NetworkX graph visualization          │
 │  - Matplotlib rendering                  │
 │  - Node sizing by PageRank               │
-│  - Color-coded importance gradient       │
+│  - Distributed arrow endpoints           │
+│  - Self-loop visualization               │
 └──────────────┬──────────────────────────┘
                │
                ▼
@@ -111,76 +112,190 @@ Nodes with no outgoing edges are handled by treating them as linking to all node
 - ✅ pybind11 bindings for C++ Graph class
 - ✅ Python API for graph construction and PageRank computation
 - ✅ PageRankResult struct with scores, convergence history, and iteration count
+- ✅ JSON-based graph configuration
 - ✅ NetworkX-based graph visualization
 - ✅ Node sizing proportional to PageRank ("pixel pie" approach)
-- ✅ Color gradient mapping (Blues colormap)
-- ✅ Directed edges with arrows
+- ✅ Distinct colors per node (tab10/tab20 colormap)
+- ✅ Arrows colored by source node
+- ✅ Distributed arrow endpoints (handles many edges gracefully)
+- ✅ Self-loop visualization
 - ✅ Legend showing exact PageRank values
 - ✅ High-resolution PNG export (300 DPI)
+- ✅ Multiple layout algorithms (spring, kamada_kawai, circular)
 
-## 📦 Building the Project
+## 📦 Installation & Setup
 
 ### Prerequisites
+
+**System Dependencies:**
 ```bash
-# C++ compiler with C++17 support
-sudo apt install build-essential cmake
+# Ubuntu/Debian
+sudo apt install build-essential cmake python3 python3-pip python3-dev
 
-# Python 3.8+ with development headers
-sudo apt install python3 python3-pip python3-dev
-
-# pybind11 for C++/Python bindings
-pip install pybind11
-
-# Visualization libraries
-pip install matplotlib networkx
-# Or: sudo apt install python3-matplotlib python3-networkx
+# macOS
+brew install cmake python3
 ```
 
-### Build Instructions
+**Python Dependencies:**
 ```bash
-# Clone repository
+# Required for C++/Python bindings
+pip install pybind11
+
+# Required for visualization
+pip install matplotlib networkx numpy
+```
+
+### Building the Project
+
+**Step 1: Clone the repository**
+```bash
 git clone git@github.com:Ty700/PageRank.git
 cd PageRank
+```
+
+**Step 2: Compile C++ core and Python bindings**
+```bash
+# Production build (optimized)
+python3 build.py
 
 # Debug build (with verbose C++ output)
 python3 build.py -d
 
-# Production build (optimized)
-python3 build.py
-
-# Clean build artifacts
+# Clean all build artifacts
 python3 build.py -c
+```
+
+The build script compiles:
+- C++ PageRank library
+- Python extension module (pybind11)
+- Standalone C++ test executable (optional)
+
+**Step 3: Verify installation**
+```bash
+# Check that Python module was built
+ls python/pagerank/*.so
+
+# Should see: pagerank_cpp.cpython-3XX-x86_64-linux-gnu.so
 ```
 
 ### Project Structure
 ```
-pagerank-project/
+PageRank/
 ├── lib/
-│   ├── graph.h          # Graph class interface
+│   ├── graph.h              # Graph class interface
 │   └── CMakeLists.txt
 ├── src/
-│   ├── graph.cpp        # Graph implementation
-│   ├── pagerank.cpp     # C++ test executable
+│   ├── graph.cpp            # Graph implementation
+│   ├── pagerank.cpp         # C++ test executable
 │   └── CMakeLists.txt
 ├── bindings/
-│   ├── pagerank_bindings.cpp  # pybind11 module definition
+│   ├── pagerank_bindings.cpp  # pybind11 module
 │   └── CMakeLists.txt
 ├── python/
-│   ├── pagerank/        # Compiled .so module location
-│   ├── examples/        # Python scripts
-│   │   ├── test_binding.py    # Visualization script
-│   └── output/          # Generated PNG files
+│   ├── graph_config.json    # User graph configuration
+│   ├── pagerank_app.py      # Main application script
+│   ├── pagerank/            # Compiled module (.so)
+│   └── output/              # Generated visualizations
 ├── bin/
-│   ├── debug/           # Debug binaries
-│   └── release/         # Release binaries
-├── build.py             # Build automation script
-├── CMakeLists.txt       # Root CMake config
+│   ├── debug/               # Debug binaries
+│   └── release/             # Release binaries
+├── build.py                 # C++ build automation
+├── CMakeLists.txt           # Root CMake config
 └── README.md
 ```
 
-## 💻 Usage Examples
+## 💻 Usage
 
-### C++ Usage
+### Quick Start
+
+**1. Configure your graph** in `python/graph_config.json`:
+```json
+{
+  "nodes": ["A", "B", "C", "D"],
+  "edges": [
+    ["A", "B"],
+    ["A", "C"],
+    ["B", "C"],
+    ["C", "D"],
+    ["D", "A"]
+  ],
+  "parameters": {
+    "visualize": true,
+    "output_path": "output/pagerank_network.png",
+    "pixel_budget": 50000,
+    "min_node_size": 500,
+    "layout": "spring"
+  }
+}
+```
+
+**2. Run the PageRank application:**
+```bash
+# Compute PageRank and generate visualization
+python3 python/pagerank_app.py --visualize
+
+# Use custom config file
+python3 python/pagerank_app.py --config my_graph.json --visualize
+
+# Compute only (no visualization)
+python3 python/pagerank_app.py
+
+# Suppress console output
+python3 python/pagerank_app.py --visualize --no-print
+```
+
+**3. View results:**
+- Console output shows PageRank scores and iterations
+- Visualization saved to `python/output/pagerank_network.png`
+
+### Configuration Options
+
+**Graph Definition:**
+- `nodes`: Array of node labels (strings)
+- `edges`: Array of `[source, destination]` pairs
+
+**Visualization Parameters:**
+- `visualize`: Enable/disable visualization (boolean)
+- `output_path`: Where to save PNG (relative to python/)
+- `pixel_budget`: Total pixels for node sizing (default: 50000)
+- `min_node_size`: Minimum node size in pixels (default: 500)
+- `layout`: Layout algorithm - `"spring"`, `"kamada_kawai"`, or `"circular"`
+- `show_plot`: Display interactive plot window (boolean, default: false)
+
+### Python API Usage
+```python
+import sys
+sys.path.insert(0, 'python/pagerank')
+import pagerank_cpp
+
+# Create graph
+g = pagerank_cpp.Graph()
+
+# Add nodes
+g.add_node("A")
+g.add_node("B")
+g.add_node("C")
+
+# Add edges (directed)
+g.add_edge("A", "B")  # A → B
+g.add_edge("B", "C")  # B → C
+g.add_edge("C", "A")  # C → A
+
+# Compute PageRank
+result = g.compute_pagerank()
+
+# Access results
+print(f"PageRank scores: {result.pagerank_scores}")
+print(f"Converged in {result.num_iterations} iterations")
+print(f"Convergence history: {result.convergence_history}")
+
+# Get graph structure
+nodes = g.get_nodes()        # ['A', 'B', 'C']
+edges = g.get_edges()        # [('A', 'B'), ('B', 'C'), ('C', 'A')]
+num_nodes = g.num_nodes()    # 3
+```
+
+### C++ Direct Usage
 ```cpp
 #include "graph.h"
 
@@ -192,12 +307,12 @@ int main() {
     g.add_node("B");
     g.add_node("C");
     
-    g.add_edge("A", "B");  // A → B
-    g.add_edge("A", "C");  // A → C
-    g.add_edge("C", "A");  // C → A (creates cycle)
+    g.add_edge("A", "B");
+    g.add_edge("B", "C");
+    g.add_edge("C", "A");
     
     // Compute PageRank
-    auto result = g.compute_pagerank();
+    PageRankResult result = g.compute_pagerank();
     
     // Access results
     std::vector<double> ranks = result.pagerank_vector;
@@ -208,68 +323,48 @@ int main() {
 }
 ```
 
-### Python Usage
-```python
-import sys
-sys.path.insert(0, 'python/pagerank')
-import pagerank_cpp
+### Visualization Features
 
-# Build graph
-g = pagerank_cpp.Graph()
-g.add_node("A")
-g.add_node("B")
-g.add_node("C")
-g.add_edge("A", "B")
-g.add_edge("A", "C")
-g.add_edge("C", "A")
+**Node Representation:**
+- Size proportional to PageRank score ("pixel pie" approach)
+- Distinct color per node (automatically assigned)
+- Labels centered on nodes
 
-# Compute PageRank
-result = g.compute_pagerank()
+**Edge Representation:**
+- Arrows colored by source node
+- Distributed endpoints (handles high-degree nodes gracefully)
+- Self-loops displayed as arcs above nodes
+- Slight curve to avoid overlap
 
-# Access results
-print(f"PageRank scores: {result.pagerank_scores}")
-print(f"Converged in {result.num_iterations} iterations")
-print(f"Convergence history: {result.convergence_history}")
+**Layout Algorithms:**
+- `spring`: Force-directed layout (default, good for most graphs)
+- `kamada_kawai`: Energy-minimization layout (better for symmetric graphs)
+- `circular`: Nodes arranged in a circle (good for visualizing connectivity)
 
-# Get graph structure
-nodes = g.get_nodes()
-edges = g.get_edges()
+**Example Output:**
 ```
+Loading configuration from: python/graph_config.json
+Building graph...
+  Nodes: 6
+  Edges: 12
+Computing PageRank...
 
-### Visualization
-```bash
-cd python/examples
-python3 test_binding.py
-# Outputs: ../output/pagerank_network.png
-```
+==================================================
+PageRank Results:
+==================================================
+  A: 0.114242
+  B: 0.135749
+  C: 0.169634
+  D: 0.199202
+  E: 0.148066
+  F: 0.233107
+==================================================
+Converged in 15 iterations
+==================================================
 
-**Visualization Features:**
-- Node sizes proportional to PageRank (total pixel budget approach)
-- Color gradient from light to dark blue (importance)
-- Directed arrows showing edge direction
-- Legend with exact PageRank values
-- Spring layout algorithm for automatic positioning
-
-**Debug Output:**
-```
-=== Transition Matrix (Column-Stochastic) ===
-         A         B         C
- A [  0.0000,  0.0000,  1.0000 ]
- B [  0.5000,  0.0000,  0.0000 ]
- C [  0.5000,  0.0000,  0.0000 ]
-
-=== Google Matrix (Column-Stochastic) ===
-         A         B         C
- A [  0.0833,  0.0833,  0.8333 ]
- B [  0.4583,  0.0833,  0.0833 ]
- C [  0.4583,  0.0833,  0.0833 ]
-
-Converged after 23 iterations.
-
-=== Final PageRank Vector ===
-A [ 0.387097 ]
-B [ 0.306452 ]
-C [ 0.306452 ]
+Generating visualization...
+Visualization saved to: python/output/pagerank_network.png
+Done!
 ```
 
 ## 📊 Algorithm Parameters
@@ -284,6 +379,12 @@ C [ 0.306452 ]
 ```cpp
 const double ALPHA = 0.75;      // Try 0.85 for Google's original value
 const double EPSILON = 1e-6;    // Tighten to 1e-8 for more precision
+```
+
+After modifying, rebuild:
+```bash
+python3 build.py -c  # Clean
+python3 build.py     # Rebuild
 ```
 
 ## 🔮 Roadmap
@@ -342,7 +443,7 @@ This project demonstrates:
 - **Systems Programming**: C++ performance optimization, memory management
 - **Language Interoperability**: C++/Python integration via pybind11
 - **Software Engineering**: Clean architecture, separation of concerns, build systems (CMake)
-- **Data Visualization**: NetworkX, matplotlib, gradient mapping, proportional scaling
+- **Data Visualization**: NetworkX, matplotlib, color mapping, distributed layouts
 - **Full-Stack Development**: Backend APIs, frontend frameworks, deployment (upcoming)
 - **DevOps**: Docker, self-hosting, reverse proxies (upcoming)
 

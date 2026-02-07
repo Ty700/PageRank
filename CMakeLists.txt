@@ -13,10 +13,8 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-add_executable(${EXE_NAME} src/pagerank.cpp)
-add_subdirectory(src)
-add_subdirectory(lib)
-add_subdirectory(bindings)
+add_executable(${EXE_NAME} ./backend/src/pagerank.cpp)
+add_subdirectory(backend)
 
 target_compile_options(${EXE_NAME} PRIVATE -Wall -Wextra) 
 

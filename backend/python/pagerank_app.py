@@ -10,7 +10,6 @@ sys.path.insert(0, str(Path(__file__).parent / 'pagerank'))
 
 import pagerank_cpp
 
-
 def load_graph_config(config_path):
     """Load graph configuration from JSON file."""
     try:

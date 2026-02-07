@@ -115,17 +115,17 @@ std::vector<std::vector<double>> Graph::build_transition_matrix()
         
         // Print column headers
         std::cout << " ";  // Space for row labels
-        for(int j = 0; j < this->num_nodes; j++)
+        for(size_t j = 0; j < this->num_nodes; j++)
         {
             std::cout << std::setw(10) << labels[j];
         }
         std::cout << std::endl;
         
         // Print matrix with row labels
-        for(int i = 0; i < this->num_nodes; i++)
+        for(size_t i = 0; i < this->num_nodes; i++)
         {
             std::cout << std::setw(2) << labels[i] << " [ ";
-            for(int j = 0; j < this->num_nodes; j++)
+            for(size_t j = 0; j < this->num_nodes; j++)
             {
                 std::cout << std::setw(8) << transition_matrix[i][j];
                 if(j < num_nodes - 1) std::cout << ", ";
@@ -159,17 +159,17 @@ std::vector<std::vector<double>> Graph::build_teleportation_matrix()
         
         // Print column headers
         std::cout << " ";  // Space for row labels
-        for(int j = 0; j < this->num_nodes; j++)
+        for(size_t j = 0; j < this->num_nodes; j++)
         {
             std::cout << std::setw(10) << labels[j];
         }
         std::cout << std::endl;
         
         // Print matrix with row labels
-        for(int i = 0; i < this->num_nodes; i++)
+        for(size_t i = 0; i < this->num_nodes; i++)
         {
             std::cout << std::setw(2) << labels[i] << " [ ";
-            for(int j = 0; j < this->num_nodes; j++)
+            for(size_t j = 0; j < this->num_nodes; j++)
             {
                 std::cout << std::setw(8) << teleportation_matrix[i][j];
                 if(j < num_nodes - 1) std::cout << ", ";
@@ -217,17 +217,17 @@ std::vector<std::vector<double>> Graph::build_google_matrix()
         
         // Print column headers
         std::cout << " ";  // Space for row labels
-        for(int j = 0; j < this->num_nodes; j++)
+        for(size_t j = 0; j < this->num_nodes; j++)
         {
             std::cout << std::setw(10) << labels[j];
         }
         std::cout << std::endl;
         
         // Print matrix with row labels
-        for(int i = 0; i < this->num_nodes; i++)
+        for(size_t i = 0; i < this->num_nodes; i++)
         {
             std::cout << std::setw(2) << labels[i] << " [ ";
-            for(int j = 0; j < this->num_nodes; j++)
+            for(size_t j = 0; j < this->num_nodes; j++)
             {
                 std::cout << std::setw(8) << google_matrix[i][j];
                 if(j < num_nodes - 1) std::cout << ", ";
@@ -298,7 +298,7 @@ struct PageRankResult Graph::compute_pagerank()
         /* Print final PageRank vector */
         std::cout << "=== Final PageRank Vector ===" << std::endl;
         std::cout << std::fixed << std::setprecision(6);
-        for(int i = 0; i < this->num_nodes; i++)
+        for(size_t i = 0; i < this->num_nodes; i++)
         {
             std::cout << labels[i] << " [ " << r_new[i] << " ]" << std::endl;
         }

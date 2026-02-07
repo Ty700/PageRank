@@ -8,11 +8,14 @@ import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 import matplotlib.colors as mcolors
 import shutil
+from flask_cors import CORS
+import time 
 
 sys.path.insert(0, str(Path(__file__).parent / 'python' / 'pagerank'))
 import pagerank_cpp
 
 app = Flask(__name__)
+CORS(app, supports_credentials=True)
 app.secret_key = secrets.token_hex(16)
 
 # In-memory storage for graphs, keyed by session ID to allow multiple users to have their own graphs

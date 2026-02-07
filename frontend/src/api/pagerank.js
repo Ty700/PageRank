@@ -1,4 +1,6 @@
-const API_URL = 'http://localhost:5000/api';
+const API_URL = process.env.NODE_ENV === 'production' 
+  ? '/projects/pagerank/api'  // Prod
+  : 'http://localhost:5000/api';  // Dev
 
 export const createGraph = async (nodes, edges) => {
   const response = await fetch(`${API_URL}/graph`, {

@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  pagerank-backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: pagerank-backend
+    restart: unless-stopped
+    ports:
+      - "5000:5000"  
+    volumes:
+      - pagerank-output:/app/output
+    environment:
+      - FLASK_ENV=production
+      - PYTHONUNBUFFERED=1
+
+volumes:
+  pagerank-output:

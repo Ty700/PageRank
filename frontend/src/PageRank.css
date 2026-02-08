@@ -1,0 +1,394 @@
+/* ===== PageRank App - Warm Theme ===== */
+:root {
+    --cream: #FAF8F3;
+    --off-white: #FFFEF9;
+    --warm-brown: #8B7355;
+    --dark-brown: #2D2D2A;
+    --light-brown: #D4C4B0;
+    --text-primary: #2D2D2A;
+    --text-secondary: #6B6B68;
+    --border: #E8E3DA;
+    --spacing-xs: 0.5rem;
+    --spacing-sm: 1rem;
+    --spacing-md: 1.5rem;
+    --spacing-lg: 2rem;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    background: var(--cream);
+    color: var(--text-primary);
+    line-height: 1.6;
+}
+
+.App {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: var(--spacing-lg);
+}
+
+/* ===== HEADER ===== */
+h1 {
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 2.5rem;
+    font-weight: 400;
+    color: var(--text-primary);
+    margin-bottom: var(--spacing-lg);
+    text-align: center;
+}
+
+h2 {
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 1.75rem;
+    font-weight: 400;
+    color: var(--text-primary);
+    margin-bottom: var(--spacing-md);
+}
+
+h3 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: var(--spacing-sm);
+}
+
+/* ===== CARDS/SECTIONS ===== */
+.section {
+    background: var(--off-white);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: var(--spacing-lg);
+    margin-bottom: var(--spacing-lg);
+}
+
+/* ===== INPUTS ===== */
+input[type="text"] {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 1rem;
+    background: var(--cream);
+    color: var(--text-primary);
+    transition: border-color 0.3s ease;
+}
+
+input[type="text"]:focus {
+    outline: none;
+    border-color: var(--warm-brown);
+}
+
+input[type="text"]::placeholder {
+    color: var(--text-secondary);
+}
+
+/* ===== BUTTONS ===== */
+button {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-primary {
+    background: var(--warm-brown);
+    color: var(--off-white);
+}
+
+.btn-primary:hover {
+    background: #75614A;
+    transform: translateY(-2px);
+}
+
+.btn-secondary {
+    background: transparent;
+    color: var(--warm-brown);
+    border: 2px solid var(--warm-brown);
+}
+
+.btn-secondary:hover {
+    background: var(--warm-brown);
+    color: var(--off-white);
+}
+
+.btn-danger {
+    background: #C44536;
+    color: var(--off-white);
+}
+
+.btn-danger:hover {
+    background: #A83526;
+}
+
+/* ===== FORM LAYOUT ===== */
+.input-group {
+    display: flex;
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-md);
+    align-items: center;
+}
+
+.arrow {
+    color: var(--text-secondary);
+    font-size: 1.5rem;
+    font-weight: 300;
+}
+
+/* ===== NODE/EDGE DISPLAY ===== */
+.node-list,
+.edge-list {
+    margin: var(--spacing-md) 0;
+    padding: var(--spacing-sm);
+    background: var(--cream);
+    border-radius: 6px;
+    min-height: 40px;
+    color: var(--text-secondary);
+}
+
+.node-list strong,
+.edge-list strong {
+    color: var(--text-primary);
+}
+
+/* ===== ACTION BUTTONS ===== */
+.actions {
+    display: flex;
+    gap: var(--spacing-sm);
+    margin-top: var(--spacing-lg);
+}
+
+/* ===== RESULTS TABLE ===== */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: var(--spacing-md);
+}
+
+thead {
+    background: var(--light-brown);
+}
+
+th {
+    padding: 0.75rem;
+    text-align: left;
+    font-weight: 600;
+    color: var(--text-primary);
+    border-bottom: 2px solid var(--border);
+}
+
+td {
+    padding: 0.75rem;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-secondary);
+}
+
+tbody tr:hover {
+    background: var(--cream);
+}
+
+/* ===== VISUALIZATION ===== */
+.visualization {
+    margin-top: var(--spacing-lg);
+    text-align: center;
+}
+
+.visualization img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+}
+
+/* ===== CONVERGENCE INFO ===== */
+.convergence-info {
+    margin-top: var(--spacing-sm);
+    padding: var(--spacing-sm);
+    background: var(--cream);
+    border-radius: 6px;
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+}
+
+/* ===== LOADING STATE ===== */
+.loading {
+    text-align: center;
+    padding: var(--spacing-lg);
+    color: var(--text-secondary);
+}
+
+/* ===== ERROR STATE ===== */
+.error {
+    padding: var(--spacing-md);
+    background: #FEF2F2;
+    border: 1px solid #FCA5A5;
+    border-radius: 6px;
+    color: #991B1B;
+    margin: var(--spacing-md) 0;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+    .App {
+        padding: var(--spacing-md);
+    }
+
+    h1 {
+        font-size: 2rem;
+    }
+
+    .actions {
+        flex-direction: column;
+    }
+
+    button {
+        width: 100%;
+    }
+
+    .input-group {
+        flex-direction: column;
+    }
+}
+
+/* ===== TEMPLATES ===== */
+.templates {
+    display: flex;
+    gap: var(--spacing-sm);
+    flex-wrap: wrap;
+}
+
+.btn-template {
+    padding: 0.625rem 1.25rem;
+    background: var(--cream);
+    color: var(--text-primary);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-template:hover {
+    background: var(--light-brown);
+    border-color: var(--warm-brown);
+}
+
+/* ===== CHIPS ===== */
+.chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-xs);
+    margin-top: var(--spacing-sm);
+    padding: var(--spacing-sm);
+    background: var(--cream);
+    border-radius: 6px;
+    min-height: 50px;
+}
+
+.chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    background: var(--off-white);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    font-size: 0.875rem;
+    color: var(--text-primary);
+}
+
+.edge-chip {
+    background: var(--light-brown);
+}
+
+.chip-remove {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 1.25rem;
+    cursor: pointer;
+    padding: 0;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+}
+
+.chip-remove:hover {
+    background: var(--cream);
+    color: var(--dark-brown);
+}
+
+/* ===== HINTS & EMPTY STATES ===== */
+.hint {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    margin-bottom: var(--spacing-sm);
+}
+
+.empty-state {
+    color: var(--text-secondary);
+    font-style: italic;
+    padding: var(--spacing-sm);
+    text-align: center;
+}
+
+/* ===== SELECT DROPDOWNS ===== */
+select {
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 1rem;
+    background: var(--cream);
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: border-color 0.3s ease;
+    min-width: 150px;
+}
+
+select:focus {
+    outline: none;
+    border-color: var(--warm-brown);
+}
+
+select:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* ===== RESULTS SECTION ===== */
+.results {
+    animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ===== DISABLED BUTTONS ===== */
+button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+button:disabled:hover {
+    transform: none;
+}

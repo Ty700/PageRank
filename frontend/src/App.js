@@ -1,239 +1,315 @@
-import React, { useState } from 'react';
-import * as api from './api/pagerank';
+import React,{ useState } from 'react';
+import './PageRank.css';
+import { createGraph, computePageRank, getVisualization, clearGraph } from './api/pagerank';
 
 function App() {
-    const [nodes, setNodes] = useState([]);
-    const [edges, setEdges] = useState([]);
-    const [nodeInput, setNodeInput] = useState('');
-    const [edgeFrom, setEdgeFrom] = useState('');
-    const [edgeTo, setEdgeTo] = useState(''); 
-    
-    // New state for PageRank results
-    const [pageRankScores, setPageRankScores] = useState(null);
-    const [iterations, setIterations] = useState(null);
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState(null);
-    const [visualizationUrl, setVisualizationUrl] = useState(null);
+  const [nodes, setNodes] = useState([]);
+  const [edges, setEdges] = useState([]);
+  const [nodeInput, setNodeInput] = useState('');
+  const [fromNode, setFromNode] = useState('');
+  const [toNode, setToNode] = useState('');
+  const [pageRankScores, setPageRankScores] = useState(null);
+  const [visualizationUrl, setVisualizationUrl] = useState(null);
+  const [iterations, setIterations] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-    const addNode = () => {
-        if (nodeInput && !nodes.includes(nodeInput)) {
-            setNodes([...nodes, nodeInput]);
-            setNodeInput('');
+  // Add multiple nodes at once
+  const addNode = () => {
+    const trimmed = nodeInput.trim();
+    if (!trimmed) return;
+
+    // Split by comma, space, or newline
+    const newNodes = trimmed
+      .split(/[,\s\n]+/)
+      .map(n => n.trim())
+      .filter(n => n && !nodes.includes(n));
+
+    if (newNodes.length === 0) {
+      setError('Node(s) already exist or invalid input');
+      setTimeout(() => setError(null), 3000);
+      return;
+    }
+
+    setNodes([...nodes, ...newNodes]);
+    setNodeInput('');
+    setError(null);
+  };
+
+  // Remove a node
+  const removeNode = (nodeToRemove) => {
+    setNodes(nodes.filter(n => n !== nodeToRemove));
+    // Also remove edges connected to this node
+    setEdges(edges.filter(([from, to]) => from !== nodeToRemove && to !== nodeToRemove));
+  };
+
+  // Add edge
+  const addEdge = () => {
+    if (!fromNode || !toNode) {
+      setError('Please select both nodes');
+      setTimeout(() => setError(null), 3000);
+      return;
+    }
+
+    const edgeExists = edges.some(([f, t]) => f === fromNode && t === toNode);
+    if (edgeExists) {
+      setError('Edge already exists');
+      setTimeout(() => setError(null), 3000);
+      return;
+    }
+
+    setEdges([...edges, [fromNode, toNode]]);
+    setFromNode('');
+    setToNode('');
+    setError(null);
+  };
+
+  // Remove edge
+  const removeEdge = (edgeToRemove) => {
+    setEdges(edges.filter(e => e !== edgeToRemove));
+  };
+
+  // Load template graphs
+  const loadTemplate = (template) => {
+    switch(template) {
+      case 'star':
+        setNodes(['A', 'B', 'C', 'D', 'E']);
+        setEdges([['A', 'B'], ['A', 'C'], ['A', 'D'], ['A', 'E']]);
+        break;
+      case 'cycle':
+        setNodes(['A', 'B', 'C', 'D']);
+        setEdges([['A', 'B'], ['B', 'C'], ['C', 'D'], ['D', 'A']]);
+        break;
+      case 'linear':
+        setNodes(['A', 'B', 'C', 'D', 'E']);
+        setEdges([['A', 'B'], ['B', 'C'], ['C', 'D'], ['D', 'E']]);
+        break;
+      case 'complete':
+        const completeNodes = ['A', 'B', 'C', 'D'];
+        const completeEdges = [];
+        for (let i = 0; i < completeNodes.length; i++) {
+          for (let j = 0; j < completeNodes.length; j++) {
+            if (i !== j) {
+              completeEdges.push([completeNodes[i], completeNodes[j]]);
+            }
+          }
         }
-    };
+        setNodes(completeNodes);
+        setEdges(completeEdges);
+        break;
+      default:
+        break;
+    }
+    setError(null);
+    setPageRankScores(null);
+    setVisualizationUrl(null);
+  };
 
-    const addEdge = () => {
-        if (edgeFrom && edgeTo && nodes.includes(edgeFrom) && nodes.includes(edgeTo)) {
-            setEdges([...edges, [edgeFrom, edgeTo]]);
-            setEdgeFrom('');
-            setEdgeTo('');
-        }
-    };
+  // Compute PageRank
+  const handleComputePageRank = async () => {
+    if (nodes.length === 0) {
+      setError('Please add at least one node');
+      return;
+    }
 
-    const handleComputePageRank = async () => {
-        if (nodes.length === 0) {
-            setError('Please add at least one node');
-            return;
-        }
+    setLoading(true);
+    setError(null);
 
-        setLoading(true);
-        setError(null);
+    try {
+      // Create graph
+      await createGraph(nodes, edges);
 
-        try {
-            // Step 1: Create graph on backend
-            await api.createGraph(nodes, edges);
-            
-            // Step 2: Compute PageRank
-            const result = await api.computePageRank();
-            setPageRankScores(result.scores);
-            setIterations(result.iterations);
-            
-            // Step 3: Get visualization
-            const imageBlob = await api.getVisualization();
-            const imageUrl = URL.createObjectURL(imageBlob);
-            setVisualizationUrl(imageUrl);
-            
-        } catch (err) {
-            setError(err.message);
-        } finally {
-            setLoading(false);
-        }
-    };
+      // Compute PageRank
+      const result = await computePageRank();
+      setPageRankScores(result.scores);
+      setIterations(result.iterations);
 
-    const handleClearGraph = async () => {
-        setNodes([]);
-        setEdges([]);
-        setPageRankScores(null);
-        setIterations(null);
-        setVisualizationUrl(null);
-        setError(null);
-        
-        // Clear on backend too
-        try {
-            await api.clearGraph();
-        } catch (err) {
-            console.error('Failed to clear backend:', err);
-        }
-    };
+      // Get visualization
+      const vizBlob = await getVisualization();
+      const url = URL.createObjectURL(vizBlob);
+      setVisualizationUrl(url);
+    } catch (err) {
+      setError(err.message || 'Failed to compute PageRank');
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    return (
-        <div style={{ padding: '20px', maxWidth: '1200px', margin: '0 auto' }}>
-            <h1>PageRank Calculator</h1>
+  // Clear everything
+  const handleClear = async () => {
+    try {
+      await clearGraph();
+      setNodes([]);
+      setEdges([]);
+      setNodeInput('');
+      setFromNode('');
+      setToNode('');
+      setPageRankScores(null);
+      setVisualizationUrl(null);
+      setIterations(null);
+      setError(null);
+    } catch (err) {
+      setError('Failed to clear graph');
+    }
+  };
 
-            {/* Error Display */}
-            {error && (
-                <div style={{ 
-                    padding: '10px', 
-                    backgroundColor: '#ffebee', 
-                    color: '#c62828',
-                    marginBottom: '20px',
-                    borderRadius: '4px'
-                }}>
-                    Error: {error}
-                </div>
-            )}
+  // Handle Enter key
+  const handleKeyPress = (e, action) => {
+    if (e.key === 'Enter') {
+      action();
+    }
+  };
 
-            {/* Add Nodes Section */}
-            <div style={{ marginBottom: '20px', padding: '20px', border: '1px solid #ccc', borderRadius: '8px' }}>
-                <h2>Add Nodes</h2>
-                <input
-                    type="text"
-                    value={nodeInput}
-                    onChange={(e) => setNodeInput(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && addNode()}
-                    placeholder="Node name (e.g., A)"
-                    style={{ padding: '8px', marginRight: '10px' }}
-                />
-                <button onClick={addNode} style={{ padding: '8px 16px' }}>
-                    Add Node
-                </button>
-                
-                <div style={{ marginTop: '10px' }}>
-                    <strong>Nodes:</strong> {nodes.join(', ') || 'None'}
-                </div>
-            </div>
+  return (
+    <div className="App">
+      <h1>PageRank Calculator</h1>
 
-            {/* Add Edges Section */}
-            <div style={{ marginBottom: '20px', padding: '20px', border: '1px solid #ccc', borderRadius: '8px' }}>
-                <h2>Add Edges</h2>
-                <input
-                    type="text"
-                    value={edgeFrom}
-                    onChange={(e) => setEdgeFrom(e.target.value)}
-                    placeholder="From node"
-                    style={{ padding: '8px', marginRight: '10px' }}
-                />
-                <span>→</span>
-                <input
-                    type="text"
-                    value={edgeTo}
-                    onChange={(e) => setEdgeTo(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && addEdge()}
-                    placeholder="To node"
-                    style={{ padding: '8px', margin: '0 10px' }}
-                />
-                <button onClick={addEdge} style={{ padding: '8px 16px' }}>
-                    Add Edge
-                </button>
-                
-                <div style={{ marginTop: '10px' }}>
-                    <strong>Edges:</strong> 
-                    {edges.length > 0 
-                        ? edges.map((e, i) => <span key={i}> {e[0]}→{e[1]}</span>)
-                        : ' None'}
-                </div>
-            </div>
+      {error && <div className="error">{error}</div>}
 
-            {/* Action Buttons */}
-            <div style={{ marginBottom: '20px', display: 'flex', gap: '10px' }}>
-                <button 
-                    onClick={handleComputePageRank}
-                    disabled={loading || nodes.length === 0}
-                    style={{ 
-                        padding: '12px 24px',
-                        backgroundColor: loading ? '#ccc' : '#4CAF50',
-                        color: '#fff',
-                        border: 'none',
-                        borderRadius: '4px',
-                        cursor: loading ? 'not-allowed' : 'pointer',
-                        fontSize: '16px',
-                        fontWeight: 'bold'
-                    }}
-                >
-                    {loading ? 'Computing...' : 'Compute PageRank'}
-                </button>
-
-                <button 
-                    onClick={handleClearGraph}
-                    style={{ 
-                        padding: '12px 24px',
-                        backgroundColor: '#f44336',
-                        color: '#fff',
-                        border: 'none',
-                        borderRadius: '4px',
-                        cursor: 'pointer',
-                        fontSize: '16px'
-                    }}
-                >
-                    Clear Graph
-                </button>
-            </div>
-
-            {/* Results Section */}
-            {pageRankScores && (
-                <div style={{ marginTop: '30px' }}>
-                    <h2>PageRank Results</h2>
-                    
-                    {/* Scores Table */}
-                    <div style={{ 
-                        padding: '20px', 
-                        border: '1px solid #ccc', 
-                        borderRadius: '8px',
-                        marginBottom: '20px'
-                    }}>
-                        <h3>Scores (Converged in {iterations} iterations)</h3>
-                        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                            <thead>
-                                <tr style={{ backgroundColor: '#f5f5f5' }}>
-                                    <th style={{ padding: '10px', textAlign: 'left', borderBottom: '2px solid #ddd' }}>Node</th>
-                                    <th style={{ padding: '10px', textAlign: 'right', borderBottom: '2px solid #ddd' }}>PageRank Score</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {Object.entries(pageRankScores)
-                                    .sort((a, b) => b[1] - a[1]) // Sort by score descending
-                                    .map(([node, score]) => (
-                                        <tr key={node}>
-                                            <td style={{ padding: '10px', borderBottom: '1px solid #eee' }}>{node}</td>
-                                            <td style={{ padding: '10px', textAlign: 'right', borderBottom: '1px solid #eee' }}>
-                                                {score.toFixed(6)}
-                                            </td>
-                                        </tr>
-                                    ))
-                                }
-                            </tbody>
-                        </table>
-                    </div>
-
-                    {/* Visualization */}
-                    {visualizationUrl && (
-                        <div style={{ 
-                            padding: '20px', 
-                            border: '1px solid #ccc', 
-                            borderRadius: '8px'
-                        }}>
-                            <h3>Graph Visualization</h3>
-                            <img 
-                                src={visualizationUrl} 
-                                alt="PageRank Visualization" 
-                                style={{ maxWidth: '100%', height: 'auto' }}
-                            />
-                        </div>
-                    )}
-                </div>
-            )}
+      {/* Templates */}
+      <div className="section">
+        <h3>Quick Start Templates</h3>
+        <div className="templates">
+          <button onClick={() => loadTemplate('cycle')} className="btn-template">Cycle Graph</button>
+          <button onClick={() => loadTemplate('star')} className="btn-template">Star Graph</button>
+          <button onClick={() => loadTemplate('linear')} className="btn-template">Linear Chain</button>
+          <button onClick={() => loadTemplate('complete')} className="btn-template">Complete Graph</button>
         </div>
-    );
+      </div>
+
+      {/* Add Nodes */}
+      <div className="section">
+        <h3>Add Nodes</h3>
+        <p className="hint">Enter node names separated by commas or spaces (e.g., "A, B, C" or "A B C")</p>
+        <div className="input-group">
+          <input
+            type="text"
+            value={nodeInput}
+            onChange={(e) => setNodeInput(e.target.value)}
+            onKeyPress={(e) => handleKeyPress(e, addNode)}
+            placeholder="A, B, C, D..."
+          />
+          <button onClick={addNode} className="btn-primary">Add Nodes</button>
+        </div>
+
+        {nodes.length > 0 && (
+          <div className="chips">
+            {nodes.map(node => (
+              <span key={node} className="chip">
+                {node}
+                <button onClick={() => removeNode(node)} className="chip-remove">×</button>
+              </span>
+            ))}
+          </div>
+        )}
+        {nodes.length === 0 && <p className="empty-state">No nodes yet. Add some above!</p>}
+      </div>
+
+      {/* Add Edges */}
+      <div className="section">
+        <h3>Add Edges</h3>
+        <div className="input-group">
+          <select 
+            value={fromNode} 
+            onChange={(e) => setFromNode(e.target.value)}
+            disabled={nodes.length === 0}
+          >
+            <option value="">From node</option>
+            {nodes.map(node => (
+              <option key={node} value={node}>{node}</option>
+            ))}
+          </select>
+
+          <span className="arrow">→</span>
+
+          <select 
+            value={toNode} 
+            onChange={(e) => setToNode(e.target.value)}
+            disabled={nodes.length === 0}
+          >
+            <option value="">To node</option>
+            {nodes.map(node => (
+              <option key={node} value={node}>{node}</option>
+            ))}
+          </select>
+
+          <button 
+            onClick={addEdge} 
+            className="btn-primary"
+            disabled={nodes.length === 0}
+          >
+            Add Edge
+          </button>
+        </div>
+
+        {edges.length > 0 && (
+          <div className="chips">
+            {edges.map((edge, idx) => (
+              <span key={idx} className="chip edge-chip">
+                {edge[0]} → {edge[1]}
+                <button onClick={() => removeEdge(edge)} className="chip-remove">×</button>
+              </span>
+            ))}
+          </div>
+        )}
+        {edges.length === 0 && <p className="empty-state">No edges yet. Add connections above!</p>}
+      </div>
+
+      {/* Actions */}
+      <div className="actions">
+        <button 
+          onClick={handleComputePageRank} 
+          className="btn-primary"
+          disabled={loading || nodes.length === 0}
+        >
+          {loading ? 'Computing...' : 'Compute PageRank'}
+        </button>
+        <button 
+          onClick={handleClear} 
+          className="btn-danger"
+          disabled={loading}
+        >
+          Clear Graph
+        </button>
+      </div>
+
+      {/* Results */}
+      {pageRankScores && (
+        <div className="section results">
+          <h2>PageRank Results</h2>
+          {iterations && (
+            <p className="convergence-info">Converged in {iterations} iterations</p>
+          )}
+
+          <table>
+            <thead>
+              <tr>
+                <th>Node</th>
+                <th>PageRank Score</th>
+              </tr>
+            </thead>
+            <tbody>
+              {Object.entries(pageRankScores)
+                .sort(([, a], [, b]) => b - a)
+                .map(([node, score]) => (
+                  <tr key={node}>
+                    <td><strong>{node}</strong></td>
+                    <td>{score.toFixed(6)}</td>
+                  </tr>
+                ))}
+            </tbody>
+          </table>
+
+          {visualizationUrl && (
+            <div className="visualization">
+              <h3>Graph Visualization</h3>
+              <img src={visualizationUrl} alt="PageRank Graph" />
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
 }
 
-export default App;
+export default App; 

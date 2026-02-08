@@ -8,12 +8,26 @@ services:
     container_name: pagerank-backend
     restart: unless-stopped
     ports:
-      - "5000:5000"  
+      - "5000:5000"
     volumes:
-      - pagerank-output:/app/output
+      - ./backend/output:/app/output
     environment:
       - FLASK_ENV=production
       - PYTHONUNBUFFERED=1
+    networks:
+      - network-services_network_services
 
-volumes:
-  pagerank-output:
+  pagerank-frontend:
+    image: nginx:alpine
+    container_name: pagerank-frontend
+    restart: unless-stopped
+    ports:
+      - "8079:80"
+    volumes:
+      - ./frontend/build:/usr/share/nginx/html:ro
+    networks:
+      - network-services_network_services
+
+networks:
+  network-services_network_services:
+    external: true

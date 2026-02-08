@@ -6,3 +6,4 @@ compile_commands.json
 .cache/
 python/pagerank/*
 python/output/*
+backend/output/*

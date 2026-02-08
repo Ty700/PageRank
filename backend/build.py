@@ -57,7 +57,7 @@ def make_build_dir():
     subprocess.run(cmd.split())
 
 def make_clean():
-    cmd = "sudo rm -rf ./build ./bin"
+    cmd = "rm -rf ./build ./bin"
     print(f"Running: {cmd}")
     subprocess.run(cmd.split())
 

@@ -222,6 +222,14 @@ def clear_graph():
     else:
         return jsonify({'error': 'No graph found for this session'}), 404
 
+@app.route('/api/health', methods=['GET'])
+def health():
+    return jsonify({
+        'status': 'ok',
+        'message': 'PageRank API is running',
+        'active_sessions': len(graphs)
+    }), 200
+
 def cleanup_old_sessions(max_age_hours=24):
     """Remove sessions older than max_age_hours."""
     current_time = time.time()
